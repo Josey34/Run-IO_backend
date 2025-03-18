@@ -27,7 +27,13 @@ checkEnvVariables([
 app.use(bodyParser.json());
 app.use(morgan('combined'));
 app.use(helmet());
-app.use(cors());
+
+// Update CORS configuration to match your frontend URL
+app.use(cors({
+    origin: 'http://localhost:19006', // Adjust the frontend URL if needed (e.g., Expo server URL)
+    methods: 'GET,POST,PUT,DELETE',
+    allowedHeaders: 'Content-Type,Authorization'
+}));
 
 // Rate limiting
 const apiLimiter = rateLimit({
@@ -57,8 +63,11 @@ firebase.initializeApp(firebaseConfig);
 
 const db = admin.firestore();
 
-const routes = require('./routes');
-app.use('/api', routes);
+const authRoutes = require('./routes/auth');
+const storeDataRoutes = require('./routes/storeData'); // Import the new route
+
+app.use('/api', authRoutes);
+app.use('/api', storeDataRoutes); // Use the new route
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -66,6 +75,6 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: 'Internal Server Error' });
 });
 
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
+app.listen(3001, () => {
+    console.log('Server is running on port 3001');
 });
