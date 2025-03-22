@@ -21,4 +21,10 @@ router.post('/store-data', [
     body('data').notEmpty()
 ], storeData);
 
+router.get('/challenges', [
+    body('userId').notEmpty(),
+    body('data').notEmpty()
+], challanges);
+
+
 module.exports = router;
