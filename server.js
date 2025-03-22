@@ -64,10 +64,12 @@ firebase.initializeApp(firebaseConfig);
 const db = admin.firestore();
 
 const authRoutes = require('./routes/auth');
-const storeDataRoutes = require('./routes/storeData'); // Import the new route
+const storeDataRoutes = require('./routes/storeData');
+const challengeRoutes = require('./routes/challengeData');
 
 app.use('/api', authRoutes);
-app.use('/api', storeDataRoutes); // Use the new route
+app.use('/api', storeDataRoutes);
+app.use('/api', challengeRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

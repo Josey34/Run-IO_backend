@@ -56,3 +56,18 @@ exports.storeData = async (req, res) => {
         res.status(400).send(error.message);
     }
 };
+
+exports.challengeData = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { userId, data } = req.body;
+    try {
+        await db.collection('challenges').doc(userId).set(data);
+        res.status(200).send({ message: 'Data stored successfully' });
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
