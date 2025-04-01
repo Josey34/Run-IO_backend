@@ -66,10 +66,12 @@ const db = admin.firestore();
 const authRoutes = require('./routes/auth');
 const storeDataRoutes = require('./routes/storeData');
 const challengeRoutes = require('./routes/challengeData');
+const runRoutes = require('./routes/run');
 
 app.use('/api', authRoutes);
 app.use('/api', storeDataRoutes);
 app.use('/api', challengeRoutes);
+app.use('/api', runRoutes)
 
 // Error handling middleware
 app.use((err, req, res, next) => {
