@@ -1,7 +1,8 @@
 const express = require('express');
 const { body } = require('express-validator');
 const router = express.Router();
-const { saveRun } = require('../controllers/runController');
+const { saveRun, fetchRun } = require('../controllers/runController');
+const { db } = require('../firebase/firebaseAdmin');
 
 // Save run data
 router.post('/runs', [
@@ -16,4 +17,5 @@ router.post('/runs', [
     body('runData.route').isArray()
 ], saveRun);
 
+router.get('/runs/:userId', fetchRun);
 module.exports = router;

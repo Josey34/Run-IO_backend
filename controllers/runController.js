@@ -37,3 +37,29 @@ exports.saveRun = async (req, res) => {
         });
     }
 };
+
+exports.fetchRun = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        // Query with ordering (requires composite index)
+        const runsRef = db.collection('runs');
+        const snapshot = await runsRef
+            .where('userId', '==', userId)
+            .orderBy('createdAt', 'desc')
+            .get();
+
+        const runs = [];
+        snapshot.forEach(doc => {
+            runs.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+
+        res.status(200).json(runs);
+    } catch (error) {
+        console.error("Error fetching runs:", error);
+        res.status(500).json({ error: "Failed to fetch runs" });
+    }
+}
