@@ -3,6 +3,7 @@ const { body } = require('express-validator');
 const router = express.Router();
 const { saveRun, fetchRun } = require('../controllers/runController');
 const { db } = require('../firebase/firebaseAdmin');
+const { predictRunMetrics } = require('../controllers/challengeController');
 
 // Save run data
 router.post('/runs', [
@@ -18,4 +19,5 @@ router.post('/runs', [
 ], saveRun);
 
 router.get('/runs/:userId', fetchRun);
+router.post('/predict-run', predictRunMetrics);
 module.exports = router;
