@@ -5,7 +5,6 @@ const { saveRun, fetchRun } = require('../controllers/runController');
 const { db } = require('../firebase/firebaseAdmin');
 const { predictRunMetrics } = require('../controllers/challengeController');
 
-// Save run data
 router.post('/runs', [
     body('userId').notEmpty(),
     body('runData').notEmpty(),

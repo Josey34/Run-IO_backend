@@ -42,7 +42,6 @@ exports.fetchRun = async (req, res) => {
     try {
         const { userId } = req.params;
 
-        // Query with ordering (requires composite index)
         const runsRef = db.collection('runs');
         const snapshot = await runsRef
             .where('userId', '==', userId)

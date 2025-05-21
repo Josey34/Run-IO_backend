@@ -1,7 +1,6 @@
 const { validationResult } = require('express-validator');
 const admin = require('firebase-admin');
 
-// Register User Controller
 exports.registerUser = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -15,7 +14,6 @@ exports.registerUser = async (req, res) => {
             password
         });
 
-        // Create a custom token
         const token = await admin.auth().createCustomToken(userRecord.uid);
 
         res.status(201).json({
@@ -28,7 +26,6 @@ exports.registerUser = async (req, res) => {
     }
 };
 
-// Login User Controller
 exports.loginUser = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -38,7 +35,6 @@ exports.loginUser = async (req, res) => {
     const { email, password } = req.body;
     try {
         const user = await admin.auth().getUserByEmail(email);
-        // Create a custom token
         const token = await admin.auth().createCustomToken(user.uid);
 
         res.status(200).json({
@@ -51,7 +47,6 @@ exports.loginUser = async (req, res) => {
     }
 };
 
-// Store Form Input Controller
 exports.storeData = async (req, res) => {
     const { userId, data } = req.body;
     try {

@@ -13,7 +13,6 @@ const { checkEnvVariables } = require('./utils/checkEnvVariables');
 
 const app = express();
 
-// Validate environment variables
 checkEnvVariables([
     'FIREBASE_SERVICE_ACCOUNT',
     'FIREBASE_API_KEY',
@@ -28,29 +27,25 @@ app.use(bodyParser.json());
 app.use(morgan('combined'));
 app.use(helmet());
 
-// Update CORS configuration to match your frontend URL
 app.use(cors({
-    origin: 'http://localhost:19006', // Adjust the frontend URL if needed (e.g., Expo server URL)
+    origin: 'http://localhost:19006',
     methods: 'GET,POST,PUT,DELETE',
     allowedHeaders: 'Content-Type,Authorization'
 }));
 
-// Rate limiting
 const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
+    windowMs: 15 * 60 * 1000,
     max: 100,
     message: 'Too many requests from this IP, please try again later.'
 });
 app.use('/api', apiLimiter);
 
-// Initialize Firebase Admin SDK
 const serviceAccount = require(process.env.FIREBASE_SERVICE_ACCOUNT);
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`
 });
 
-// Initialize Firebase
 const firebaseConfig = {
     apiKey: process.env.FIREBASE_API_KEY,
     authDomain: process.env.FIREBASE_AUTH_DOMAIN,
@@ -73,7 +68,6 @@ app.use('/api', storeDataRoutes);
 app.use('/api', challengeRoutes);
 app.use('/api', runRoutes)
 
-// Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ message: 'Internal Server Error' });

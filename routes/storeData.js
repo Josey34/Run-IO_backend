@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const { db } = require('../firebase/firebaseAdmin');
 
-// Route to store form data
 router.post('/store-data', async (req, res) => {
     const { userId, data } = req.body;
 

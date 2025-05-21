@@ -2,7 +2,6 @@ const { default: axios } = require('axios');
 const admin = require('firebase-admin');
 const db = admin.firestore();
 
-// Get Challenges Controller
 exports.getChallenges = async (req, res) => {
     try {
         const challengesSnapshot = await db.collection('challanges').get();
@@ -20,7 +19,6 @@ exports.updateChallengeStatus = async (req, res) => {
     const { challengeId, completed } = req.body;
 
     try {
-        // Query the document by the 'id' field, not the document ID
         const querySnapshot = await db.collection('challanges')
             .where('id', '==', Number(challengeId))
             .get();
@@ -32,16 +30,13 @@ exports.updateChallengeStatus = async (req, res) => {
             });
         }
 
-        // Get the first (and should be only) matching document
         const doc = querySnapshot.docs[0];
         const currentData = doc.data();
 
-        // Update using the document reference
         await doc.ref.update({
             completed: completed
         });
 
-        // Return the updated data in the same format as your GET
         res.status(200).json({
             message: 'Challenge status updated successfully',
             challenge: {
@@ -70,7 +65,6 @@ exports.predictRunMetrics = async (req, res) => {
     console.log('Received userData:', userData);
 
     try {
-        // Call Python ML API
         const mlResponse = await axios.post(
             'https://josey04.pythonanywhere.com/predict',
             userData,
@@ -88,7 +82,6 @@ exports.predictRunMetrics = async (req, res) => {
             "Running Time(min)": duration
         } = mlResponse.data;
 
-        // Save predictions to Firestore
         const challengeData = {
             userId,
             type: 'Running',
