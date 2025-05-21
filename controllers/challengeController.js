@@ -19,33 +19,41 @@ exports.updateChallengeStatus = async (req, res) => {
     const { challengeId, completed } = req.body;
 
     try {
-        const querySnapshot = await db.collection('challanges')
-            .where('id', '==', Number(challengeId))
-            .get();
+        if (!challengeId || completed === undefined) {
+            return res.status(400).json({
+                error: 'Missing required fields',
+                details: 'Both challengeId and completed status are required'
+            });
+        }
 
-        if (querySnapshot.empty) {
+        const docRef = db.collection('challanges').doc(challengeId);
+        const doc = await docRef.get();
+
+        if (!doc.exists) {
             return res.status(404).json({
                 error: 'Challenge not found',
                 details: `No challenge found with ID: ${challengeId}`
             });
         }
 
-        const doc = querySnapshot.docs[0];
         const currentData = doc.data();
 
-        await doc.ref.update({
-            completed: completed
+        await docRef.update({
+            completed: completed,
+            updatedAt: new Date().toLocaleString('sv-SE').replace(' ', ' - ')
         });
 
         res.status(200).json({
             message: 'Challenge status updated successfully',
             challenge: {
-                userId: currentData.id,
+                id: challengeId,
+                userId: currentData.userId,
                 type: currentData.type,
                 distance: currentData.distance,
-                pace: currentData.pace,
+                speed: currentData.speed,
                 duration: currentData.duration,
-                completed: completed
+                completed: completed,
+                updatedAt: new Date().toLocaleString('sv-SE').replace(' ', ' - ')
             }
         });
     } catch (error) {
