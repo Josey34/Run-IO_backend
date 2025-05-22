@@ -2,3 +2,4 @@
 node_modules
 ./config/run-io-dc0c9-firebase-adminsdk-fbsvc-30035024a3.json
 ./run-io-dc0c9-firebase-adminsdk-fbsvc-30035024a3/firebase-adminsdk-fbsvc-30035024a3.json
+.vercel

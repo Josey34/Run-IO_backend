@@ -9,42 +9,56 @@ const morgan = require('morgan');
 const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
-const { checkEnvVariables } = require('./utils/checkEnvVariables');
 
 const app = express();
-
-checkEnvVariables([
-    'FIREBASE_SERVICE_ACCOUNT',
-    'FIREBASE_API_KEY',
-    'FIREBASE_AUTH_DOMAIN',
-    'FIREBASE_PROJECT_ID',
-    'FIREBASE_STORAGE_BUCKET',
-    'FIREBASE_MESSAGING_SENDER_ID',
-    'FIREBASE_APP_ID'
-]);
 
 app.use(bodyParser.json());
 app.use(morgan('combined'));
 app.use(helmet());
 
 app.use(cors({
-    origin: 'http://localhost:19006',
-    methods: 'GET,POST,PUT,DELETE',
-    allowedHeaders: 'Content-Type,Authorization'
+    origin: function (origin, callback) {
+        if (!origin) return callback(null, true);
+
+        if (process.env.NODE_ENV !== 'production') {
+            return callback(null, true);
+        }
+
+        return callback(null, true);
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+    credentials: false
 }));
 
 const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
+    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
     message: 'Too many requests from this IP, please try again later.'
 });
 app.use('/api', apiLimiter);
 
-const serviceAccount = require(process.env.FIREBASE_SERVICE_ACCOUNT);
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`
-});
+let serviceAccount;
+try {
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+        try {
+            serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+        } catch (err) {
+            console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT env var:", err);
+        }
+    }
+} catch (error) {
+    console.error('Error loading Firebase service account:', error);
+}
+
+
+
+if (!admin.apps.length && serviceAccount) {
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`
+    });
+}
 
 const firebaseConfig = {
     apiKey: process.env.FIREBASE_API_KEY,
@@ -54,10 +68,12 @@ const firebaseConfig = {
     messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
     appId: process.env.FIREBASE_APP_ID,
 };
-firebase.initializeApp(firebaseConfig);
 
-const db = admin.firestore();
+if (!firebase.getApps().length) {
+    firebase.initializeApp(firebaseConfig);
+}
 
+// Routes
 const authRoutes = require('./routes/auth');
 const storeDataRoutes = require('./routes/storeData');
 const challengeRoutes = require('./routes/challengeData');
@@ -66,13 +82,22 @@ const runRoutes = require('./routes/run');
 app.use('/api', authRoutes);
 app.use('/api', storeDataRoutes);
 app.use('/api', challengeRoutes);
-app.use('/api', runRoutes)
+app.use('/api', runRoutes);
+
+app.get('/', (req, res) => {
+    res.json({ message: 'Run-IO Backend is running on Vercel!' });
+});
 
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ message: 'Internal Server Error' });
 });
 
-app.listen(3001, () => {
-    console.log('Server is running on port 3001');
-});
+if (process.env.NODE_ENV !== 'production') {
+    const port = process.env.PORT || 3001;
+    app.listen(port, () => {
+        console.log(`Server is running on port ${port}`);
+    });
+}
+
+module.exports = app;
